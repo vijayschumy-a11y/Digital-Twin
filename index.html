@@ -1,0 +1,1978 @@
+<title>Digital Twin — Vijay B.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B1210">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Digital Twin">
+<link rel="manifest" id="pwa-manifest">
+<link rel="icon" id="pwa-favicon">
+<link rel="apple-touch-icon" id="pwa-touch-icon">
+<style>
+  :root{
+    --ink:#0B1210;
+    --panel:#121B19;
+    --panel-2:#17211F;
+    --line:#24332F;
+    --text:#E7EEEA;
+    --muted:#8FA39B;
+    --accent:#5EEAD4;
+    --flag:#E76F51;
+    --flag-soft:rgba(231,111,81,.16);
+    --warn:#F4A261;
+    --warn-soft:rgba(244,162,97,.14);
+    --good:#7FB88F;
+    --good-soft:rgba(127,184,143,.12);
+    --font-display:'Segoe UI Semibold','Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;
+    --font-body:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;
+    --font-mono:'Cascadia Code','Cascadia Mono',Consolas,'SF Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(94,234,212,.07), transparent 60%),
+      var(--ink);
+    color:var(--text);
+    font-family:var(--font-body);
+    font-size:15px;
+    line-height:1.5;
+    padding:32px 20px 64px;
+  }
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;}
+  .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:22px;}
+  .label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+
+  /* ---------- disclaimer ---------- */
+  .disclaimer{
+    border:1px solid var(--line);
+    background:var(--panel);
+    border-left:3px solid var(--warn);
+    border-radius:6px;
+    padding:12px 16px;
+    font-size:13px;
+    color:var(--muted);
+    display:flex;
+    gap:10px;
+    align-items:baseline;
+  }
+  .disclaimer strong{color:var(--warn);font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;flex-shrink:0;}
+
+  /* ---------- family summary (plain language, for sharing) ---------- */
+  .family-card{
+    background:linear-gradient(180deg, rgba(127,184,143,.06), transparent 40%), var(--panel);
+    border:1px solid var(--line);
+    border-top:3px solid var(--good);
+    border-radius:10px;
+    padding:22px 24px;
+  }
+  .family-card .kicker{
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--good);margin-bottom:6px;
+  }
+  .family-card h2{
+    font-family:var(--font-display);font-size:19px;font-weight:600;margin-bottom:12px;
+  }
+  .family-card p{
+    max-width:66ch;color:var(--text);font-size:14px;line-height:1.65;margin:0 0 14px;
+  }
+  .family-card p.muted{color:var(--muted);font-size:13px;}
+  .family-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .family-item{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:8px;
+    padding:11px 14px;font-size:13.5px;
+  }
+  .family-item b{display:block;font-size:12.5px;color:var(--good);margin-bottom:2px;font-weight:600;}
+  .family-help{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .family-help li{font-size:13.5px;padding-left:16px;position:relative;}
+  .family-help li::before{content:"";position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--good);}
+  .family-watch{
+    margin-top:14px;border:1px dashed var(--flag);border-radius:8px;
+    padding:11px 14px;font-size:13px;color:var(--muted);
+  }
+  .family-watch strong{color:var(--flag);}
+
+  /* ---------- header ---------- */
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:20px;
+    flex-wrap:wrap;
+    border-bottom:1px solid var(--line);
+    padding-bottom:18px;
+  }
+  header h1{font-size:30px;font-weight:600;letter-spacing:-.01em;}
+  header h1 span{color:var(--accent);}
+  .subline{color:var(--muted);font-size:13.5px;margin-top:4px;}
+  .sync{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    color:var(--muted);
+    text-align:right;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 2.4s ease-in-out infinite;}
+
+  /* ---------- install banner ---------- */
+  #install-banner{
+    display:none;
+    align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:8px;padding:12px 16px;font-size:13px;
+  }
+  #install-banner.show{display:flex;}
+  #install-banner button{
+    background:var(--accent);color:var(--ink);border:none;border-radius:6px;
+    padding:8px 16px;font-weight:600;font-size:13px;cursor:pointer;font-family:var(--font-body);
+    flex-shrink:0;
+  }
+  #install-banner button:hover{opacity:.9;}
+  #install-banner .dismiss{background:none;color:var(--muted);font-weight:400;padding:8px 4px;}
+
+  /* ---------- vitals strip ---------- */
+  .vitals{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .vital{
+    background:var(--panel);
+    padding:16px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .vital .val{font-family:var(--font-mono);font-size:22px;font-variant-numeric:tabular-nums;color:var(--text);}
+  .vital .val small{font-size:12px;color:var(--muted);font-weight:400;}
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:2px 8px;
+    border-radius:20px;
+    width:fit-content;
+  }
+  .chip.flag{background:var(--flag-soft);color:var(--flag);}
+  .chip.warn{background:var(--warn-soft);color:var(--warn);}
+  .chip.good{background:var(--good-soft);color:var(--good);}
+  .chip::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;}
+
+  /* ---------- priority summary ---------- */
+  .priority-list{display:flex;flex-direction:column;gap:10px;}
+  .priority-row{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px 14px 14px;
+    display:grid;
+    grid-template-columns:34px 1fr auto;
+    gap:4px 14px;
+    align-items:start;
+  }
+  .priority-row.tier-soon{border-left:3px solid var(--flag);}
+  .priority-row.tier-self{border-left:3px solid var(--warn);}
+  .priority-row.tier-routine{border-left:3px solid var(--good);}
+  .rank{
+    grid-row:1/3;
+    font-family:var(--font-mono);
+    font-size:22px;
+    font-variant-numeric:tabular-nums;
+    color:var(--muted);
+    line-height:1;
+    padding-top:2px;
+  }
+  .priority-row .title{font-weight:600;font-size:14.5px;grid-column:2/3;}
+  .priority-row .tier{grid-column:3/4;grid-row:1/2;}
+  .priority-row .why{grid-column:2/4;color:var(--muted);font-size:12.5px;margin:2px 0 0;}
+  .priority-row .action{grid-column:2/4;font-size:12.5px;margin-top:5px;}
+  .priority-row .action strong{color:var(--text);font-weight:600;}
+  .priority-note{
+    font-size:12.5px;color:var(--muted);
+    border:1px dashed var(--line);border-radius:8px;
+    padding:10px 14px;
+  }
+  .priority-note strong{color:var(--accent);}
+
+  /* ---------- main grid: rig + nodes ---------- */
+  .scan{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:24px;
+    align-items:start;
+  }
+  @media (max-width:820px){ .scan{grid-template-columns:1fr;} }
+
+  .rig-panel{
+    background:
+      repeating-linear-gradient(180deg, rgba(94,234,212,.035) 0px, rgba(94,234,212,.035) 1px, transparent 1px, transparent 3px),
+      var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px;
+    position:relative;
+    overflow:hidden;
+  }
+  .rig-panel .label{margin-bottom:10px;}
+  .rig-caption{
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--muted);
+    text-align:center;
+    margin-top:8px;
+  }
+  .sweep{
+    position:absolute;left:0;right:0;height:120px;
+    background:linear-gradient(180deg, transparent, rgba(94,234,212,.08), transparent);
+    animation:sweep 5s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes sweep{ 0%{top:-120px;} 100%{top:100%;} }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  .node-flag{animation:pulse 2.2s ease-in-out infinite;}
+
+  .node-cards{display:flex;flex-direction:column;gap:12px;}
+  .node-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:4px 16px;
+  }
+  .node-card.flag{border-left:3px solid var(--flag);}
+  .node-card .tag{
+    font-family:var(--font-mono);font-size:11px;color:var(--muted);
+    grid-column:1/2;white-space:nowrap;
+  }
+  .node-card .title{font-weight:600;font-size:14.5px;grid-column:2/3;}
+  .node-card .note{grid-column:2/3;color:var(--muted);font-size:13px;}
+  .node-card .status{grid-column:1/2;}
+
+  /* ---------- systems grid ---------- */
+  h2.section{
+    font-size:13px;font-family:var(--font-mono);letter-spacing:.08em;
+    text-transform:uppercase;color:var(--muted);
+    margin:6px 0 2px;
+    display:flex;align-items:center;gap:10px;
+  }
+  h2.section::after{content:"";flex:1;height:1px;background:var(--line);}
+
+  .systems{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:12px;
+  }
+  .sys-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .sys-card h3{font-size:14px;font-weight:600;}
+  .sys-card p{margin:0;font-size:12.5px;color:var(--muted);}
+
+  /* ---------- sleep tracker ---------- */
+  .privacy-note{font-size:12px;color:var(--muted);margin:-6px 0 4px;}
+  .sleep-panel{display:flex;flex-direction:column;gap:14px;}
+  .sleep-form{
+    display:flex;flex-wrap:wrap;gap:14px;align-items:end;
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:16px;
+  }
+  .sleep-field{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+  .sleep-field label{
+    font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--muted);
+  }
+  .sleep-field input{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:6px;
+    color:var(--text);padding:7px 9px;font-family:var(--font-body);font-size:13px;
+  }
+  .sleep-field input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+  .note-field{flex:1;min-width:170px;}
+  .quality-picker{display:flex;gap:6px;flex-shrink:0;}
+  .quality-picker button{
+    width:38px;height:38px;flex-shrink:0;border-radius:6px;border:1px solid var(--line);
+    background:var(--panel-2);color:var(--muted);font-family:var(--font-mono);
+    font-size:13px;cursor:pointer;
+  }
+  .quality-picker button.active{background:var(--accent);color:var(--ink);border-color:var(--accent);}
+  .quality-picker button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .sleep-add{
+    background:var(--accent);color:var(--ink);border:none;border-radius:6px;
+    padding:9px 18px;font-weight:600;font-size:13px;cursor:pointer;font-family:var(--font-body);
+  }
+  .sleep-add:hover{opacity:.9;}
+  .sleep-stats{display:flex;gap:10px;flex-wrap:wrap;}
+  .sleep-stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:11px 14px;flex:1;min-width:150px;}
+  .sleep-stat .num{font-family:var(--font-mono);font-size:21px;color:var(--accent);font-variant-numeric:tabular-nums;}
+  .sleep-stat .lbl{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .sleep-stat.note{background:var(--panel);border-left:3px solid var(--warn);font-size:12.5px;color:var(--muted);flex:2;min-width:220px;display:block;padding:11px 14px;}
+  .sleep-chart{
+    display:flex;align-items:flex-end;gap:7px;height:100px;
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:10px 12px 6px;overflow-x:auto;
+  }
+  .sleep-bar{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:22px;}
+  .sleep-bar .bar{width:14px;border-radius:3px 3px 0 0;}
+  .sleep-bar .d{font-family:var(--font-mono);font-size:8.5px;color:var(--muted);white-space:nowrap;}
+  .sleep-list{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .sleep-row{
+    display:grid;grid-template-columns:100px 60px 1fr 44px 26px;gap:10px;
+    background:var(--panel);padding:9px 14px;font-size:12.5px;align-items:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .sleep-row .note-text{color:var(--muted);}
+  .sleep-row .del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;justify-self:end;min-width:32px;min-height:32px;}
+  .sleep-row .del:hover{color:var(--flag);}
+  .sleep-row .del:focus-visible{outline:2px solid var(--accent);}
+  .sleep-empty{color:var(--muted);font-size:13px;padding:16px;text-align:center;}
+
+  /* ---------- wearable / watch data ---------- */
+  .integration-note{
+    background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);
+    border-radius:8px;padding:12px 16px;font-size:13px;color:var(--muted);
+  }
+  .integration-note strong{color:var(--warn);}
+  .watch-form{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:16px;display:flex;flex-wrap:wrap;gap:14px;align-items:end;
+  }
+  .import-row{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    background:var(--panel-2);border:1px dashed var(--line);border-radius:8px;
+    padding:12px 16px;
+  }
+  .import-row label.file-btn{
+    background:var(--panel);border:1px solid var(--line);border-radius:6px;
+    padding:8px 14px;font-size:13px;cursor:pointer;color:var(--text);
+  }
+  .import-row label.file-btn:hover{border-color:var(--accent);}
+  .import-row input[type="file"]{position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;}
+  .import-status{font-size:12.5px;color:var(--muted);}
+  .import-status.ok{color:var(--good);}
+  .import-status.err{color:var(--flag);}
+
+  /* ---------- symptom severity trend ---------- */
+  .symptom-form{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:16px;display:flex;flex-direction:column;gap:16px;
+  }
+  .symptom-sliders{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:14px 22px;
+  }
+  .symptom-slider{display:flex;flex-direction:column;gap:6px;}
+  .symptom-slider .row{display:flex;align-items:center;gap:10px;}
+  .symptom-slider label{
+    font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--muted);
+  }
+  .symptom-slider input[type="range"]{flex:1;accent-color:var(--accent);}
+  .symptom-slider input[type="range"]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .symptom-slider .sv{font-family:var(--font-mono);font-size:13px;width:14px;text-align:right;color:var(--text);}
+  .symptom-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;
+  }
+  .symptom-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:12px 14px;display:flex;flex-direction:column;gap:6px;
+  }
+  .symptom-card .top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .symptom-card h4{font-size:13.5px;font-weight:600;margin:0;}
+  .symptom-card svg{width:100%;height:44px;display:block;}
+  .symptom-card .trend{font-size:11px;color:var(--muted);}
+  .symptom-card .trend.up{color:var(--flag);}
+  .symptom-card .trend.down{color:var(--good);}
+
+  /* ---------- diagnostics ---------- */
+  .diag-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:10px;
+  }
+  .diag-item{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:11px 14px;
+    font-size:13px;
+  }
+  .diag-item .why{color:var(--muted);font-size:12px;margin-top:3px;}
+
+  /* ---------- diet direction ---------- */
+  .diet-verdict{
+    background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:8px;padding:14px 16px;font-size:13.5px;
+  }
+  .diet-verdict strong{color:var(--accent);}
+  .diet-cols{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:14px;
+  }
+  .diet-col{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;}
+  .diet-col h3{
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .diet-col.reduce h3{color:var(--flag);}
+  .diet-col.keep h3{color:var(--good);}
+  .diet-col ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .diet-col li{font-size:13px;padding-left:14px;position:relative;color:var(--text);}
+  .diet-col li span{display:block;color:var(--muted);font-size:12px;margin-top:1px;}
+  .diet-col.reduce li::before{content:"";position:absolute;left:0;top:6px;width:6px;height:6px;border-radius:50%;background:var(--flag);}
+  .diet-col.keep li::before{content:"";position:absolute;left:0;top:6px;width:6px;height:6px;border-radius:50%;background:var(--good);}
+  .diet-stat{
+    display:flex;gap:16px;align-items:center;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:8px;
+    padding:14px 16px;
+  }
+  .diet-stat .big{font-family:var(--font-mono);font-size:26px;color:var(--accent);font-variant-numeric:tabular-nums;}
+  .diet-stat p{margin:0;font-size:12.5px;color:var(--muted);}
+
+  /* ---------- exercise plan ---------- */
+  .exercise-verdict{
+    background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:8px;padding:14px 16px;font-size:13.5px;
+  }
+  .exercise-verdict strong{color:var(--accent);}
+  .week-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+    gap:8px;
+  }
+  .day-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:10px 12px;display:flex;flex-direction:column;gap:6px;
+  }
+  .day-card .day{font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+  .day-card .focus{font-size:13px;font-weight:600;}
+  .day-card .dur{font-size:11.5px;color:var(--muted);}
+  .day-card.rest{opacity:.75;}
+  .exercise-cols{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:14px;
+  }
+  .exercise-col{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;}
+  .exercise-col h3{
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+    margin-bottom:10px;color:var(--good);
+  }
+  .exercise-col.avoid h3{color:var(--flag);}
+  .exercise-col ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .exercise-col li{font-size:13px;padding-left:14px;position:relative;color:var(--text);}
+  .exercise-col li span{display:block;color:var(--muted);font-size:12px;margin-top:1px;}
+  .exercise-col li::before{content:"";position:absolute;left:0;top:6px;width:6px;height:6px;border-radius:50%;background:var(--good);}
+  .exercise-col.avoid li::before{background:var(--flag);}
+
+  /* ---------- checklist ---------- */
+  .checklist{display:flex;flex-direction:column;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .check-row{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  .check-row:last-child{border-bottom:none;}
+  .check-row input{
+    width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;
+  }
+  .check-row input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .check-row label{font-size:13.5px;cursor:pointer;}
+  .check-row .sub{color:var(--muted);font-size:12px;display:block;margin-top:1px;}
+
+  footer{
+    text-align:center;color:var(--muted);font-size:11.5px;
+    font-family:var(--font-mono);padding-top:10px;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .dot,.node-flag,.sweep{animation:none !important;}
+  }
+</style>
+
+<div class="wrap">
+
+  <div id="install-banner">
+    <span id="install-text">Install this as an app on your home screen.</span>
+    <span>
+      <button type="button" id="install-btn">Install</button>
+      <button type="button" class="dismiss" id="install-dismiss">Not now</button>
+    </span>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Not medical advice</strong>
+    <span>This is a personal wellness visualization built from what you've reported — not a diagnosis. Patterns flagged below are common, non-specific correlates, not conclusions. Please bring them to a physician for proper evaluation.</span>
+  </div>
+
+  <header>
+    <div>
+      <h1>Digital Twin — <span>Vijay B.</span></h1>
+      <div class="subline">Age 41 · Male · Married · 2 sons (8, 4) · Snapshot built from self-reported symptoms</div>
+    </div>
+    <div class="sync"><span class="dot"></span><span id="sync-time">SYNCING…</span></div>
+  </header>
+
+  <div class="family-card">
+    <div class="kicker">For your wife — plain-language summary</div>
+    <h2>What's going on with Vijay right now</h2>
+    <p>A few things have been building up over the past few months — nothing flagged as an emergency, but enough that it's worth tracking together rather than brushing off as "just tired" or "just getting older."</p>
+    <div class="family-grid">
+      <div class="family-item"><b>Neck, shoulder &amp; back pain</b>Almost certainly from the long daily drive (7:45 AM&ndash;8 PM days, 3.5 hours behind the wheel). Fixable with posture changes and stretch breaks &mdash; already in progress.</div>
+      <div class="family-item"><b>Right knee</b>The old cricket injury from 4 years ago is still sore. Getting it properly checked with an X-ray rather than assuming it's just old scar tissue.</div>
+      <div class="family-item"><b>Digestion</b>Some changes worth a doctor's look. Also trying fewer sweets and no milk late at night to see if that eases the burning feeling.</div>
+      <div class="family-item"><b>Tiredness &amp; joint aches</b>Worse in the mornings, plus some finger joint pain. A blood test is planned to check the common, very treatable causes.</div>
+    </div>
+    <p class="muted">Already planned: one doctor's visit to cover the blood test, stool test, and knee X-ray/referral together, rather than three separate trips.</p>
+    <p style="margin-bottom:8px;"><strong>How you can help:</strong></p>
+    <ul class="family-help">
+      <li>A gentle nudge to actually book (and keep) that doctor's appointment</li>
+      <li>Remind him to take a stretch break on long drives, even a 2-minute one</li>
+      <li>Support the "less milk/sweets late at night" change &mdash; easier with company than solo</li>
+      <li>Otherwise, this is being tracked and taken seriously, not ignored &mdash; no need to worry more than that for now</li>
+    </ul>
+    <div class="family-watch"><strong>Go straight to a doctor, don't wait, if:</strong> the knee suddenly swells, locks, or gives way, or the stomach issue gets noticeably worse rather than staying steady.</div>
+  </div>
+
+  <div class="vitals">
+    <div class="vital">
+      <span class="label">Height</span>
+      <span class="val">5'7&Prime; <small>170 cm</small></span>
+    </div>
+    <div class="vital">
+      <span class="label">Weight</span>
+      <span class="val" id="vital-weight">80 <small>kg</small></span>
+    </div>
+    <div class="vital">
+      <span class="label">BMI</span>
+      <span class="val" id="vital-bmi">27.7 <small>kg/m&sup2;</small></span>
+      <span class="chip warn" id="vital-bmi-chip">Above normal range</span>
+    </div>
+    <div class="vital">
+      <span class="label">Energy (AM)</span>
+      <span class="val">Low</span>
+      <span class="chip flag">Fatigue, despite fixed sleep time</span>
+    </div>
+    <div class="vital">
+      <span class="label">Joint status</span>
+      <span class="val">Multi-site</span>
+      <span class="chip flag">Fingers, back, R knee</span>
+    </div>
+    <div class="vital">
+      <span class="label">Digestion</span>
+      <span class="val">4&times;/day <small>semi-formed</small></span>
+      <span class="chip flag">Bowel pattern changed</span>
+    </div>
+    <div class="vital">
+      <span class="label">Commute</span>
+      <span class="val">3.5<small>h drive/day</small></span>
+      <span class="chip flag">7:45 AM &ndash; 8 PM day</span>
+    </div>
+  </div>
+
+  <h2 class="section">Doctor visit priorities</h2>
+  <div class="priority-list">
+    <div class="priority-row tier-soon">
+      <span class="rank">01</span>
+      <span class="title">Right knee — post-surgical pain</span>
+      <span class="tier chip flag">See doctor soon</span>
+      <span class="why">4 years post ligament/meniscus repair, pain persists — and a prior injury in that exact joint plus your mother's OA both raise the odds of early degenerative change here specifically.</span>
+      <span class="action"><strong>Action:</strong> orthopedic review + X-ray of the right knee.</span>
+    </div>
+    <div class="priority-row tier-soon">
+      <span class="rank">02</span>
+      <span class="title">Bowel habit change</span>
+      <span class="tier chip flag">See doctor soon</span>
+      <span class="why">Stools going from formed to semi-formed at ~4&times;/day is a concrete, persistent change — the kind worth a direct look rather than waiting it out.</span>
+      <span class="action"><strong>Action:</strong> GP visit for stool routine/microscopy, sooner if it's been going on more than 2&ndash;3 weeks.</span>
+    </div>
+    <div class="priority-row tier-soon">
+      <span class="rank">03</span>
+      <span class="title">Fatigue + finger joints + muscle ache (combined)</span>
+      <span class="tier chip flag">See doctor soon</span>
+      <span class="why">Three symptoms, one likely shared cause — Vitamin D, B12, thyroid, iron, and inflammation all show up across fatigue, joints, and muscles at once.</span>
+      <span class="action"><strong>Action:</strong> one blood panel (CBC, ESR/CRP, Vitamin D, B12, TSH, uric acid) — <strong>can be ordered in the same visit as #2</strong>.</span>
+    </div>
+    <div class="priority-row tier-self">
+      <span class="rank">04</span>
+      <span class="title">Neck, shoulders &amp; low back</span>
+      <span class="tier chip warn">Self-manage first</span>
+      <span class="why">New pain that lines up tightly with 3.5 hours of daily driving — a strong mechanical explanation exists before reaching for a medical one.</span>
+      <span class="action"><strong>Action:</strong> fix seat/headrest ergonomics + hourly stretch breaks for 2&ndash;3 weeks &rarr; physio referral only if it doesn't ease up.</span>
+    </div>
+    <div class="priority-row tier-self">
+      <span class="rank">05</span>
+      <span class="title">Night-time burning (sambar / sweet / milk)</span>
+      <span class="tier chip warn">Self-manage first</span>
+      <span class="why">Reflux- and lactose-intolerance-shaped pattern, tied to specific foods late at night — cheap to test yourself before further workup.</span>
+      <span class="action"><strong>Action:</strong> drop those three foods after dinner for a week &rarr; GP if the burning continues anyway.</span>
+    </div>
+    <div class="priority-row tier-routine">
+      <span class="rank">06</span>
+      <span class="title">Weight / BMI</span>
+      <span class="tier chip good">Routine</span>
+      <span class="why">27.7 is above the standard range but not acute — best handled as an ongoing lifestyle item alongside the above, not a standalone appointment.</span>
+      <span class="action"><strong>Action:</strong> revisit at your next routine check-up.</span>
+    </div>
+    <div class="priority-note"><strong>Practical tip:</strong> #1&ndash;#3 can realistically be one GP visit — ask for the blood panel, the stool test, and the knee X-ray/ortho referral together, rather than three separate trips.</div>
+  </div>
+
+  <h2 class="section">Body scan</h2>
+  <div class="scan">
+
+    <div class="rig-panel">
+      <span class="label">Node map · front view</span>
+      <div class="sweep"></div>
+      <svg viewBox="0 0 300 500" width="100%" role="img" aria-label="Skeletal node diagram showing flagged pain sites at the neck, shoulders, lower back, abdomen (GI), both hands, and major muscle segments">
+        <!-- limbs (muscle segments) -->
+        <g stroke="var(--flag)" stroke-width="4" stroke-linecap="round" opacity="0.85">
+          <line x1="98" y1="88" x2="72" y2="168" class="node-flag"/>
+          <line x1="72" y1="168" x2="62" y2="246" class="node-flag"/>
+          <line x1="202" y1="88" x2="228" y2="168" class="node-flag"/>
+          <line x1="228" y1="168" x2="238" y2="246" class="node-flag"/>
+          <!-- neck + shoulders / upper back: driving posture -->
+          <line x1="150" y1="62" x2="150" y2="82" class="node-flag"/>
+          <line x1="98" y1="88" x2="202" y2="88" class="node-flag"/>
+        </g>
+        <g stroke="var(--accent)" stroke-width="4" stroke-linecap="round" opacity="0.55">
+          <line x1="118" y1="232" x2="112" y2="346" />
+          <line x1="112" y1="346" x2="106" y2="462" />
+          <line x1="182" y1="232" x2="188" y2="346" />
+          <line x1="188" y1="346" x2="194" y2="462" />
+        </g>
+
+        <!-- torso -->
+        <rect x="112" y="82" width="76" height="150" rx="26" fill="none" stroke="var(--accent)" stroke-width="3" opacity="0.6"/>
+        <!-- spine line -->
+        <line x1="150" y1="90" x2="150" y2="225" stroke="var(--muted)" stroke-width="2" stroke-dasharray="2 5" opacity="0.6"/>
+
+        <!-- head -->
+        <circle cx="150" cy="40" r="23" fill="none" stroke="var(--accent)" stroke-width="3" opacity="0.7"/>
+
+        <!-- joint nodes: normal -->
+        <g fill="var(--panel)" stroke="var(--accent)" stroke-width="2.5">
+          <circle cx="118" cy="232" r="6"/>
+          <circle cx="182" cy="232" r="6"/>
+          <circle cx="188" cy="346" r="5.5"/>
+          <circle cx="106" cy="462" r="5"/>
+          <circle cx="194" cy="462" r="5"/>
+        </g>
+
+        <!-- right knee: flagged (post-op, ligament + meniscus repair) -->
+        <!-- figure faces the viewer, so the subject's RIGHT side renders on the image's LEFT -->
+        <circle cx="112" cy="346" r="7.5" fill="var(--flag-soft)" stroke="var(--flag)" stroke-width="2.5" class="node-flag"/>
+        <!-- numbness patch near surgical site: distinct dashed marker, not pain -->
+        <circle cx="104" cy="356" r="11" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.85"/>
+
+        <!-- neck node: flagged -->
+        <circle cx="150" cy="70" r="7" fill="var(--flag-soft)" stroke="var(--flag)" stroke-width="2.5" class="node-flag"/>
+
+        <!-- shoulder / upper-back nodes: flagged -->
+        <circle cx="98" cy="88" r="6.5" fill="var(--flag-soft)" stroke="var(--flag)" stroke-width="2.5" class="node-flag"/>
+        <circle cx="202" cy="88" r="6.5" fill="var(--flag-soft)" stroke="var(--flag)" stroke-width="2.5" class="node-flag"/>
+        <circle cx="72" cy="168" r="5.5" fill="var(--panel)" stroke="var(--accent)" stroke-width="2.5"/>
+        <circle cx="228" cy="168" r="5.5" fill="var(--panel)" stroke="var(--accent)" stroke-width="2.5"/>
+
+        <!-- lower back node: flagged -->
+        <circle cx="150" cy="222" r="9" fill="var(--flag-soft)" stroke="var(--flag)" stroke-width="2.5" class="node-flag"/>
+
+        <!-- GI / abdomen node: flagged -->
+        <circle cx="150" cy="152" r="9" fill="var(--flag-soft)" stroke="var(--flag)" stroke-width="2.5" class="node-flag"/>
+
+        <!-- hand nodes: flagged, with finger dots -->
+        <g class="node-flag">
+          <circle cx="62" cy="246" r="7" fill="var(--flag-soft)" stroke="var(--flag)" stroke-width="2.5"/>
+          <circle cx="48" cy="234" r="2.6" fill="var(--flag)"/>
+          <circle cx="44" cy="246" r="2.6" fill="var(--flag)"/>
+          <circle cx="46" cy="259" r="2.6" fill="var(--flag)"/>
+          <circle cx="54" cy="268" r="2.6" fill="var(--flag)"/>
+        </g>
+        <g class="node-flag">
+          <circle cx="238" cy="246" r="7" fill="var(--flag-soft)" stroke="var(--flag)" stroke-width="2.5"/>
+          <circle cx="252" cy="234" r="2.6" fill="var(--flag)"/>
+          <circle cx="256" cy="246" r="2.6" fill="var(--flag)"/>
+          <circle cx="254" cy="259" r="2.6" fill="var(--flag)"/>
+          <circle cx="246" cy="268" r="2.6" fill="var(--flag)"/>
+        </g>
+
+        <!-- leader lines to labels -->
+        <g stroke="var(--line)" stroke-width="1">
+          <line x1="159" y1="222" x2="255" y2="222"/>
+          <line x1="238" y1="253" x2="270" y2="290"/>
+        </g>
+        <text x="262" y="219" fill="var(--flag)" font-family="var(--font-mono)" font-size="9.5">L_SPINE</text>
+        <text x="255" y="300" fill="var(--flag)" font-family="var(--font-mono)" font-size="9.5">HAND_R</text>
+        <line x1="159" y1="152" x2="245" y2="152" stroke="var(--line)" stroke-width="1"/>
+        <text x="252" y="149" fill="var(--flag)" font-family="var(--font-mono)" font-size="9.5">GI_TRACT</text>
+        <line x1="156" y1="70" x2="240" y2="55" stroke="var(--line)" stroke-width="1"/>
+        <text x="247" y="52" fill="var(--flag)" font-family="var(--font-mono)" font-size="9.5">C_SPINE</text>
+        <line x1="204" y1="88" x2="248" y2="95" stroke="var(--line)" stroke-width="1"/>
+        <text x="255" y="98" fill="var(--flag)" font-family="var(--font-mono)" font-size="9.5">SHOULDER</text>
+        <line x1="93" y1="352" x2="38" y2="352" stroke="var(--line)" stroke-width="1"/>
+        <text x="3" y="349" fill="var(--flag)" font-family="var(--font-mono)" font-size="9.5">R_KNEE</text>
+      </svg>
+      <div class="rig-caption">Figure faces you — your right is on the image's left</div>
+      <div class="rig-caption">TEAL = baseline &nbsp;·&nbsp; CORAL = pain, flagged &nbsp;·&nbsp; DASHED AMBER = numbness, no pain there</div>
+    </div>
+
+    <div class="node-cards">
+      <div class="node-card flag">
+        <span class="tag">NODE 00</span>
+        <span class="title">Neck &amp; shoulders (C_SPINE)</span>
+        <span class="status chip flag">New, driving-linked</span>
+        <span class="note">3.5 hours of daily driving, 7:45 AM to 8 PM days, for the past few months. Neck and the region just below it (shoulders/upper back) hurting is a very direct match for sustained forward head posture, steering-wheel grip, and no back support over long stretches — this one is worth an ergonomic fix before it's treated as a medical problem.</span>
+      </div>
+      <div class="node-card flag">
+        <span class="tag">NODE 01</span>
+        <span class="title">Lower back (L_SPINE)</span>
+        <span class="status chip flag">Persistent pain</span>
+        <span class="note">Reported ongoing low back pain. Given the daily 3.5-hour drive, seat posture and lumbar support are now the leading suspect alongside core/paraspinal strain and disc-related irritation.</span>
+      </div>
+      <div class="node-card flag">
+        <span class="tag">NODE 02</span>
+        <span class="title">Finger joints (bilateral)</span>
+        <span class="status chip flag">Joint pain</span>
+        <span class="note">Pain reported in the small joints of both hands. Worth discussing: inflammatory joint conditions, vitamin D status, repetitive strain, thyroid function — a doctor can narrow this with a simple panel.</span>
+      </div>
+      <div class="node-card flag">
+        <span class="tag">SYS 03</span>
+        <span class="title">Muscular (generalized)</span>
+        <span class="status chip flag">Myalgia</span>
+        <span class="note">Diffuse muscle pain reported alongside joint and back symptoms. Sleep quality, hydration, activity load, and vitamin D are common contributors worth ruling out first.</span>
+      </div>
+      <div class="node-card flag">
+        <span class="tag">SYS 04</span>
+        <span class="title">Energy / fatigue</span>
+        <span class="status chip flag">Worse AM</span>
+        <span class="note">Daily tiredness, most pronounced in the morning. Sleep timing itself has been fixed for a few months, so it's less likely a simple late-night/sleep-debt cause now. But a 12+ hour day out of the house (7:45 AM&ndash;8 PM) with 3.5 hours of driving is a real physical + cognitive load on its own, on top of any GI/thyroid/anemia driver.</span>
+      </div>
+      <div class="node-card flag">
+        <span class="tag">NODE 06</span>
+        <span class="title">Right knee (R_KNEE) — post-surgical</span>
+        <span class="status chip flag">Pain + numbness, 4yr post-op</span>
+        <span class="note">Ligament + meniscus repair 4 years ago after a cricket injury. Ongoing pain this far out, plus a fixed numb patch near the surgical site, are two separate things: the numbness is very likely a cut cutaneous nerve branch (common and usually permanent after this exact surgery, and on its own is not dangerous). The pain is the one to actually chase — old ligament/meniscus injuries are the single strongest risk factor for early osteoarthritis in that specific knee, which lines up with your mother's OA history. Worth an X-ray of that knee specifically rather than assuming it's just old-surgery soreness.</span>
+      </div>
+      <div class="node-card flag">
+        <span class="tag">SYS 05</span>
+        <span class="title">Digestive (GI tract)</span>
+        <span class="status chip flag">Pattern changed</span>
+        <span class="note">Non-veg heavy diet; burning sensation specifically after sambar, sweets, or milk at night; stools have gone from formed to semi-formed, ~4&times;/day. Night-time burning after specific foods reads like reflux/gastritis; milk as a trigger is also a classic lactose-intolerance sign. The stool change is the detail to flag first if it's persisted more than 2&ndash;3 weeks.</span>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section">Systems status</h2>
+  <div class="systems">
+    <div class="sys-card">
+      <h3>Neck &amp; Shoulders</h3>
+      <span class="chip flag">Attention</span>
+      <p>New, tracks with 3.5h/day driving.</p>
+    </div>
+    <div class="sys-card">
+      <h3>Skeletal — Spine</h3>
+      <span class="chip flag">Attention</span>
+      <p>Low back pain, daily.</p>
+    </div>
+    <div class="sys-card">
+      <h3>Joints — Hands</h3>
+      <span class="chip flag">Attention</span>
+      <p>Finger joint pain, bilateral.</p>
+    </div>
+    <div class="sys-card">
+      <h3>Muscular</h3>
+      <span class="chip flag">Attention</span>
+      <p>Generalized muscle aching.</p>
+    </div>
+    <div class="sys-card">
+      <h3>Energy / Sleep</h3>
+      <span class="chip flag">Attention</span>
+      <p>Fatigue, worse on waking.</p>
+    </div>
+    <div class="sys-card">
+      <h3>Weight / Metabolic</h3>
+      <span class="chip warn">Monitor</span>
+      <p>BMI 27.7 — above the standard normal range.</p>
+    </div>
+    <div class="sys-card">
+      <h3>Digestive / GI</h3>
+      <span class="chip flag">Attention</span>
+      <p>Nightly burning after sambar/sweet/milk; stools semi-formed, 4&times;/day.</p>
+    </div>
+  </div>
+
+  <h2 class="section">Sleep tracker</h2>
+  <div class="privacy-note">Saved only in this browser (localStorage) — nothing here is sent anywhere. It won't follow you to another device, and clearing browser data will clear it too.</div>
+  <div class="sleep-panel">
+    <form class="sleep-form" id="sleep-form">
+      <div class="sleep-field">
+        <label for="s-date">Night of</label>
+        <input type="date" id="s-date" required>
+      </div>
+      <div class="sleep-field">
+        <label for="s-bed">Bedtime</label>
+        <input type="time" id="s-bed" required>
+      </div>
+      <div class="sleep-field">
+        <label for="s-wake">Wake time</label>
+        <input type="time" id="s-wake" required>
+      </div>
+      <div class="sleep-field">
+        <label>Quality</label>
+        <div class="quality-picker" id="s-quality">
+          <button type="button" data-v="1">1</button>
+          <button type="button" data-v="2">2</button>
+          <button type="button" data-v="3">3</button>
+          <button type="button" data-v="4">4</button>
+          <button type="button" data-v="5">5</button>
+        </div>
+      </div>
+      <div class="sleep-field note-field">
+        <label for="s-note">Note (optional)</label>
+        <input type="text" id="s-note" placeholder="e.g. woke up stiff, kids woke me up">
+      </div>
+      <button type="submit" class="sleep-add">Add night</button>
+    </form>
+
+    <div class="sleep-stats" id="sleep-stats"></div>
+    <div class="sleep-chart" id="sleep-chart"></div>
+    <div class="sleep-list" id="sleep-list"></div>
+  </div>
+
+  <h2 class="section">Weight tracker</h2>
+  <div class="privacy-note">Same as the other trackers — saved only in this browser, nothing sent anywhere.</div>
+  <form class="watch-form" id="weight-form">
+    <div class="sleep-field">
+      <label for="wt-date">Day of</label>
+      <input type="date" id="wt-date" required>
+    </div>
+    <div class="sleep-field">
+      <label for="wt-weight">Weight (kg)</label>
+      <input type="number" id="wt-weight" min="30" max="250" step="0.1" placeholder="e.g. 79.6" required>
+    </div>
+    <button type="submit" class="sleep-add">Save weight</button>
+  </form>
+  <div class="sleep-stats" id="weight-stats"></div>
+  <div class="symptom-grid" id="weight-grid"></div>
+  <div class="sleep-list" id="weight-list"></div>
+
+  <h2 class="section">Wearable data (Noise watch)</h2>
+  <div class="integration-note">
+    <strong>No live sync:</strong> this page can't connect to Apple Health, NoiseFit, or any cloud service directly — it's a sandboxed page with no outbound network access. But since your Noise watch writes into Apple Health, Apple's own export (below) is a real, structured file with resting heart rate, SpO2, steps, and sleep already in it — no proprietary API needed. Import that, or type in readings manually.
+  </div>
+
+  <form class="watch-form" id="watch-form">
+    <div class="sleep-field">
+      <label for="w-date">Day of</label>
+      <input type="date" id="w-date" required>
+    </div>
+    <div class="sleep-field">
+      <label for="w-hr">Resting HR (bpm)</label>
+      <input type="number" id="w-hr" min="30" max="200" placeholder="e.g. 72">
+    </div>
+    <div class="sleep-field">
+      <label for="w-spo2">SpO2 (%)</label>
+      <input type="number" id="w-spo2" min="70" max="100" placeholder="e.g. 97">
+    </div>
+    <div class="sleep-field">
+      <label for="w-steps">Steps</label>
+      <input type="number" id="w-steps" min="0" max="100000" placeholder="e.g. 4200">
+    </div>
+    <button type="submit" class="sleep-add">Save reading</button>
+  </form>
+
+  <div class="import-row">
+    <label class="file-btn" for="w-import">Import Apple Health / NoiseFit / Google Fit export</label>
+    <input type="file" id="w-import" accept=".csv,.json,.xml,text/csv,application/json,text/xml,application/xml">
+    <span class="import-status" id="import-status">Apple Health: Settings &rarr; your name &rarr; Health &rarr; Export All Health Data &rarr; unzip &rarr; upload the export.xml inside (not the .zip). Also accepts plain .csv/.json with columns like date, resting hr, spo2, steps, sleep duration/quality.</span>
+  </div>
+
+  <div class="symptom-grid" id="watch-grid"></div>
+  <div class="sleep-list" id="watch-list"></div>
+
+  <h2 class="section">Symptom severity trend</h2>
+  <div class="privacy-note">Same as the sleep log — saved only in this browser, nothing sent anywhere.</div>
+  <form class="symptom-form" id="symptom-form">
+    <div class="sleep-field" style="max-width:180px;">
+      <label for="sym-date">Day of</label>
+      <input type="date" id="sym-date" required>
+    </div>
+    <div class="symptom-sliders">
+      <div class="symptom-slider">
+        <label for="sym-neck">Neck &amp; shoulders</label>
+        <div class="row"><input type="range" id="sym-neck" min="0" max="5" value="0"><span class="sv">0</span></div>
+      </div>
+      <div class="symptom-slider">
+        <label for="sym-back">Low back</label>
+        <div class="row"><input type="range" id="sym-back" min="0" max="5" value="0"><span class="sv">0</span></div>
+      </div>
+      <div class="symptom-slider">
+        <label for="sym-knee">Right knee</label>
+        <div class="row"><input type="range" id="sym-knee" min="0" max="5" value="0"><span class="sv">0</span></div>
+      </div>
+      <div class="symptom-slider">
+        <label for="sym-fingers">Finger joints</label>
+        <div class="row"><input type="range" id="sym-fingers" min="0" max="5" value="0"><span class="sv">0</span></div>
+      </div>
+      <div class="symptom-slider">
+        <label for="sym-muscle">Muscles</label>
+        <div class="row"><input type="range" id="sym-muscle" min="0" max="5" value="0"><span class="sv">0</span></div>
+      </div>
+      <div class="symptom-slider">
+        <label for="sym-gi">Digestion / GI</label>
+        <div class="row"><input type="range" id="sym-gi" min="0" max="5" value="0"><span class="sv">0</span></div>
+      </div>
+      <div class="symptom-slider">
+        <label for="sym-fatigue">Fatigue</label>
+        <div class="row"><input type="range" id="sym-fatigue" min="0" max="5" value="0"><span class="sv">0</span></div>
+      </div>
+    </div>
+    <div>
+      <button type="submit" class="sleep-add">Save today's severities</button>
+      <span class="privacy-note" style="margin-left:10px;">0 = none &middot; 5 = severe</span>
+    </div>
+  </form>
+  <div class="symptom-grid" id="symptom-grid"></div>
+
+  <div class="systems" style="margin-top:6px;">
+    <div class="sys-card">
+      <h3>Family / Load context</h3>
+      <span class="chip good">Noted</span>
+      <p>Two young kids (8, 4) — physical + sleep load is a plausible contributor to fatigue and back strain.</p>
+    </div>
+    <div class="sys-card">
+      <h3>Commute load</h3>
+      <span class="chip flag">Attention</span>
+      <p>3.5h driving/day, few months running — leading suspect for the neck, shoulder, and back pain specifically.</p>
+    </div>
+    <div class="sys-card">
+      <h3>Right knee — post-surgical</h3>
+      <span class="chip flag">Attention</span>
+      <p>Ligament + meniscus repair, 4 years ago. Pain persists; fixed numb patch near incision.</p>
+    </div>
+    <div class="sys-card">
+      <h3>Family history — Joints</h3>
+      <span class="chip warn">Monitor</span>
+      <p>Mother diagnosed with osteoarthritis. OA has a real familial component — raises this as a specific line of inquiry, not just a generic ache.</p>
+    </div>
+  </div>
+
+  <div class="node-card flag" style="margin-top:2px;">
+    <span class="tag">FHX 01</span>
+    <span class="title">Family history: Osteoarthritis (mother)</span>
+    <span class="status chip warn">Hereditary factor</span>
+    <span class="note">A parent with OA increases the odds that your own finger-joint and back pain is mechanical/degenerative rather than purely muscular — OA commonly starts in the small hand joints and the spine. This doesn't confirm OA in you, but it's a strong reason to get the joints imaged rather than assuming it's just strain. It also makes the <strong>right knee the highest-priority joint to check</strong>: family history of OA plus a prior ligament/meniscus tear in the same joint compound each other's risk.</span>
+  </div>
+
+  <h2 class="section">Worth discussing with a doctor</h2>
+  <div class="diag-grid">
+    <div class="diag-item">CBC + ESR / CRP<div class="why">General inflammation screen</div></div>
+    <div class="diag-item">Vitamin D (25-OH) &amp; B12<div class="why">Very common cause of exactly this symptom cluster</div></div>
+    <div class="diag-item">Thyroid panel (TSH)<div class="why">Fatigue + joint/muscle ache overlap</div></div>
+    <div class="diag-item">Uric acid</div>
+    <div class="diag-item">RA factor / anti-CCP<div class="why">If finger joints show swelling or stiffness</div></div>
+    <div class="diag-item">Hand + spine X-ray<div class="why">Mother has OA — checks for early degenerative joint change, not just inflammation</div></div>
+    <div class="diag-item">Fasting glucose / HbA1c</div>
+    <div class="diag-item">Sleep review<div class="why">Snoring, sleep quality — explains AM fatigue</div></div>
+    <div class="diag-item">Posture / ergonomic assessment<div class="why">For the low back pain specifically</div></div>
+    <div class="diag-item">Stool routine &amp; microscopy<div class="why">Frequency + consistency change is the most concrete new signal — worth checking directly</div></div>
+    <div class="diag-item">H. pylori test<div class="why">Common cause of nightly burning after specific foods</div></div>
+    <div class="diag-item">Lactose intolerance / hydrogen breath test<div class="why">Milk is a named trigger for the burning sensation</div></div>
+    <div class="diag-item">Iron / B12 / folate<div class="why">If GI absorption is affected, this alone can explain the fatigue and muscle aches too</div></div>
+    <div class="diag-item">Cervical spine (neck) assessment<div class="why">New symptom, tightly linked to daily driving posture</div></div>
+    <div class="diag-item">Physiotherapy referral<div class="why">Neck + shoulder + low back together, all driving-linked, usually respond well to targeted physio</div></div>
+    <div class="diag-item">Right knee X-ray / orthopedic review<div class="why">4 years post-op pain, plus family + injury history — check for post-traumatic OA, hardware, or re-tear</div></div>
+    <div class="diag-item">Nerve/sensory check on knee numbness<div class="why">Only worth raising if the numb area is spreading, painful, or new — a stable patch this long out is usually benign</div></div>
+  </div>
+  <div class="node-card flag" style="margin-top:2px;">
+    <span class="tag">NOTE</span>
+    <span class="title">Bring the GI and joint/fatigue symptoms to the same visit</span>
+    <span class="status chip warn">Correlation, not diagnosis</span>
+    <span class="note">Gut symptoms, fatigue, and joint pain showing up together is itself useful information for a doctor — it can point toward nutrient malabsorption feeding the fatigue and muscle pain, or, less commonly, a gut-linked joint condition. Mentioning all three together (not as separate complaints) helps them connect the pattern faster.</span>
+  </div>
+
+  <h2 class="section">Diet direction</h2>
+  <div class="diet-verdict">
+    <strong>Verdict:</strong> no need to eliminate non-veg. The GI trigger foods are sambar, sweets, and milk — not meat. Moderate <em>what kind</em> of non-veg rather than cutting it out, and hold off on drastic changes until the uric acid and stool results (priorities #2&ndash;#3) come back.
+  </div>
+  <div class="diet-cols">
+    <div class="diet-col reduce">
+      <h3>Reduce</h3>
+      <ul>
+        <li>Red meat &amp; processed/cured meat<span>Highest link to elevated uric acid — relevant given the joint pain + pending uric acid test</span></li>
+        <li>Fried / heavy non-veg preparations<span>Harder on digestion generally, and heavier right before an early bedtime</span></li>
+        <li>Milk specifically at night<span>Named trigger for the burning sensation — swap for curd or buttermilk instead</span></li>
+        <li>Sweets straight after a spicy meal<span>Sambar + sweet + milk together stacks three triggers at once</span></li>
+      </ul>
+    </div>
+    <div class="diet-col keep">
+      <h3>Keep / lean into</h3>
+      <ul>
+        <li>Fish &amp; eggs<span>Lower purine than red meat, and fish brings omega-3 which is genuinely anti-inflammatory for joints</span></li>
+        <li>Vegetables, whole grains, fibre<span>Supports the weight goal and gut regularity at the same time</span></li>
+        <li>Curd / buttermilk over milk<span>Gentler on the gut for most people who react to milk specifically</span></li>
+        <li>Water through the day<span>Especially useful given the long hours in the car</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="diet-stat">
+    <span class="big">&minus;4kg</span>
+    <p>of load taken off the right knee per step, for every 1kg of body weight lost — the single most direct diet-linked lever for priority #1.</p>
+  </div>
+
+  <h2 class="section">Exercise plan</h2>
+  <div class="exercise-verdict">
+    <strong>Principle:</strong> build fitness and undo the driving posture without loading the right knee until it's actually been checked. Everything below is low-impact and fits around a 7:45&ndash;8 PM day &mdash; nothing here needs a gym.
+  </div>
+
+  <div class="week-grid">
+    <div class="day-card"><span class="day">Mon</span><span class="focus">Mobility + Strength A</span><span class="dur">5 min AM &middot; 20 min PM</span></div>
+    <div class="day-card"><span class="day">Tue</span><span class="focus">Mobility + Walk</span><span class="dur">5 min AM &middot; 25 min</span></div>
+    <div class="day-card"><span class="day">Wed</span><span class="focus">Mobility + Strength B</span><span class="dur">5 min AM &middot; 20 min PM</span></div>
+    <div class="day-card"><span class="day">Thu</span><span class="focus">Mobility + Walk</span><span class="dur">5 min AM &middot; 25 min</span></div>
+    <div class="day-card"><span class="day">Fri</span><span class="focus">Mobility + Strength A</span><span class="dur">5 min AM &middot; 20 min PM</span></div>
+    <div class="day-card"><span class="day">Sat</span><span class="focus">Longer walk/cycle + Stretch</span><span class="dur">30&ndash;40 min</span></div>
+    <div class="day-card rest"><span class="day">Sun</span><span class="focus">Rest / gentle stretch only</span><span class="dur">&mdash;</span></div>
+  </div>
+
+  <div class="exercise-cols">
+    <div class="exercise-col">
+      <h3>Daily mobility (5 min, AM)</h3>
+      <ul>
+        <li>Neck rotations &amp; side tilts<span>Directly counters the forward-head driving posture</span></li>
+        <li>Shoulder rolls, doorway chest opener</li>
+        <li>Cat-cow for the low back</li>
+        <li>Finger stretches &amp; slow fist-to-open reps</li>
+        <li>Ankle pumps</li>
+      </ul>
+    </div>
+    <div class="exercise-col">
+      <h3>Strength A &amp; B (20 min, knee-safe)</h3>
+      <ul>
+        <li>Glute bridges, dead bug, bird-dog<span>Core + hip stability without knee flexion under load</span></li>
+        <li>Straight-leg raises, wall sits (pain-free range only)<span>Builds the quad that supports the knee, without deep bending</span></li>
+        <li>Clamshells, standing hip abduction</li>
+        <li>Band rows / scapular squeezes<span>Targets the exact shoulder/upper-back muscles driving posture weakens</span></li>
+        <li>Wall angels for the neck &amp; shoulders</li>
+      </ul>
+    </div>
+    <div class="exercise-col">
+      <h3>Cardio (low-impact)</h3>
+      <ul>
+        <li>Brisk walking on flat ground, supportive shoes<span>The default choice &mdash; easiest to fit around the commute</span></li>
+        <li>Swimming or stationary cycling<span>Good alternates if accessible &mdash; both fully off-load the knee</span></li>
+      </ul>
+    </div>
+    <div class="exercise-col">
+      <h3>Before bed (10 min)</h3>
+      <ul>
+        <li>Hip flexor stretch<span>Undoes hours of hip flexion from sitting/driving</span></li>
+        <li>Hamstring stretch</li>
+        <li>Child's pose for the low back</li>
+        <li>Doorway chest stretch + gentle neck side stretch</li>
+      </ul>
+    </div>
+    <div class="exercise-col avoid">
+      <h3>Hold off on, for now</h3>
+      <ul>
+        <li>Running / jogging</li>
+        <li>Deep squats &amp; lunges</li>
+        <li>Jumping / plyometric drills</li>
+        <li>Cricket or other twisting-impact sports<span>Same joint that was originally injured &mdash; wait for the ortho review (priority #1) before returning to it</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="priority-note"><strong>Stop and reassess if:</strong> the knee swells, locks, or gives way during any of this, or if any pain sharpens rather than easing over a couple of weeks &mdash; that's the same signal already flagged for priority #1, not a normal training ache.</div>
+
+  <h2 class="section">Daily micro-actions</h2>
+  <div class="checklist">
+    <div class="check-row">
+      <input type="checkbox" id="c1"/>
+      <label for="c1">5-minute morning mobility routine<span class="sub">Gentle back + finger stretches before getting out of bed</span></label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="c2"/>
+      <label for="c2">Set up a proper desk/chair height<span class="sub">Low back pain often tracks with sitting posture</span></label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="c3"/>
+      <label for="c3">Consistent sleep + wake time<span class="sub">Targets the morning-heavy fatigue pattern</span></label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="c4"/>
+      <label for="c4">Book a blood panel (Vitamin D, thyroid, CRP)<span class="sub">Fastest way to rule in/out the common causes above</span></label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="c5"/>
+      <label for="c5">Skip sambar, sweets, and milk after dinner for a week<span class="sub">See if the night-time burning drops out — a quick, free test before the doctor visit</span></label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="c6"/>
+      <label for="c6">Note stool frequency/consistency daily<span class="sub">Bring this log — it's more useful to a doctor than a one-line description</span></label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="c7"/>
+      <label for="c7">Adjust car seat, headrest, and mirror before each drive<span class="sub">Headrest should support the back of the head, seat close enough that you're not craning toward the wheel</span></label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="c8"/>
+      <label for="c8">Stop and stretch neck/shoulders every 60&ndash;90 min on the drive<span class="sub">Even a 2-minute break breaks the static-posture load that's driving this pain</span></label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="c9"/>
+      <label for="c9">Track the right knee separately: swelling, locking, or giving way<span class="sub">Any of these (not just soreness) is the signal to escalate sooner rather than waiting</span></label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="c10"/>
+      <label for="c10">Leave 2.5&ndash;3 hours between dinner and bed<span class="sub">Given the 8 PM return, this likely means eating earlier and lighter rather than a heavy late dinner</span></label>
+    </div>
+  </div>
+
+  <footer>DIGITAL_TWIN · SELF-REPORTED SNAPSHOT · NOT A MEDICAL DEVICE</footer>
+</div>
+
+<script>
+  document.getElementById('sync-time').textContent =
+    'LAST SYNC ' + new Date().toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'});
+
+  // ---- PWA: icon, manifest, service worker, install prompt ----
+  (function(){
+    // draw a simple icon on canvas so we don't hand-encode a PNG
+    function makeIcon(size){
+      var c = document.createElement('canvas');
+      c.width = size; c.height = size;
+      var ctx = c.getContext('2d');
+      ctx.fillStyle = '#0B1210';
+      ctx.fillRect(0, 0, size, size);
+      ctx.strokeStyle = '#5EEAD4';
+      ctx.lineWidth = size * 0.045;
+      ctx.lineCap = 'round';
+      // two DNA-ish rails
+      ctx.beginPath();
+      for (var i = 0; i <= 10; i++){
+        var t = i/10, y = t*size;
+        var x1 = size*0.32 + Math.sin(t*Math.PI*2)*size*0.16;
+        if (i===0) ctx.moveTo(x1,y); else ctx.lineTo(x1,y);
+      }
+      ctx.stroke();
+      ctx.beginPath();
+      for (var j = 0; j <= 10; j++){
+        var t2 = j/10, y2 = t2*size;
+        var x2 = size*0.68 - Math.sin(t2*Math.PI*2)*size*0.16;
+        if (j===0) ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(94,234,212,0.45)';
+      ctx.lineWidth = size*0.018;
+      for (var k=1;k<10;k+=2){
+        var ty = k/10*size;
+        ctx.beginPath();
+        ctx.moveTo(size*0.32 + Math.sin(k/10*Math.PI*2)*size*0.16, ty);
+        ctx.lineTo(size*0.68 - Math.sin(k/10*Math.PI*2)*size*0.16, ty);
+        ctx.stroke();
+      }
+      return c.toDataURL('image/png');
+    }
+
+    var icon192 = makeIcon(192);
+    var icon512 = makeIcon(512);
+
+    document.getElementById('pwa-favicon').href = icon192;
+    document.getElementById('pwa-touch-icon').href = icon192;
+
+    var manifest = {
+      name: "Vijay's Digital Twin",
+      short_name: 'Digital Twin',
+      start_url: location.href,
+      scope: location.href,
+      display: 'standalone',
+      background_color: '#0B1210',
+      theme_color: '#0B1210',
+      icons: [
+        {src: icon192, sizes: '192x192', type: 'image/png'},
+        {src: icon512, sizes: '512x512', type: 'image/png'}
+      ]
+    };
+    var manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+    document.getElementById('pwa-manifest').href = URL.createObjectURL(manifestBlob);
+
+    // NOTE: a real service worker isn't achievable here — browsers reject blob:/data: URLs
+    // for service worker scripts (same-origin network fetch only), and this single hosted
+    // HTML file has no way to serve a second file at its own path. Left out rather than
+    // shipping code that always silently fails. Practical effect: no offline caching layer,
+    // and Chrome's *automatic* install banner (which checks for a registered service worker)
+    // very likely won't fire — manual "Add to Home Screen" from the browser menu is the
+    // reliable path on both Android and iOS.
+
+    // native install prompt (Chrome/Android/Edge) — kept as a no-op fallback; will only
+    // ever fire if a future browser relaxes the service-worker requirement for this case
+    var deferredPrompt = null;
+    var banner = document.getElementById('install-banner');
+    var installBtn = document.getElementById('install-btn');
+    var dismissBtn = document.getElementById('install-dismiss');
+    var installText = document.getElementById('install-text');
+    var DISMISS_KEY = 'dt_install_dismissed';
+
+    window.addEventListener('beforeinstallprompt', function(e){
+      e.preventDefault();
+      deferredPrompt = e;
+      if (!localStorage.getItem(DISMISS_KEY)) banner.classList.add('show');
+    });
+    installBtn.addEventListener('click', function(){
+      if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+      banner.classList.remove('show');
+    });
+    dismissBtn.addEventListener('click', function(){
+      banner.classList.remove('show');
+      localStorage.setItem(DISMISS_KEY, '1');
+    });
+
+    // iOS Safari never fires beforeinstallprompt — show manual instructions instead
+    var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isIOS && !isStandalone && !localStorage.getItem(DISMISS_KEY)) {
+      installText.textContent = 'On iPhone: tap the Share icon, then "Add to Home Screen".';
+      installBtn.style.display = 'none';
+      banner.classList.add('show');
+    } else if (!isIOS && !isStandalone && !localStorage.getItem(DISMISS_KEY)) {
+      // Android/desktop: give beforeinstallprompt a moment; if it never fires
+      // (expected here — see note above), fall back to manual instructions instead
+      // of leaving these users with no guidance at all.
+      setTimeout(function(){
+        if (!deferredPrompt && !banner.classList.contains('show')) {
+          installText.textContent = 'Tap the browser menu (⋮) and choose "Install app" or "Add to Home Screen".';
+          installBtn.style.display = 'none';
+          banner.classList.add('show');
+        }
+      }, 2500);
+    }
+  })();
+
+  // ---- checklist: persist checked state locally ----
+  (function(){
+    var CHECK_KEY = 'dt_checklist_v1';
+    var checks = {};
+    try { checks = JSON.parse(localStorage.getItem(CHECK_KEY) || '{}'); } catch(e) { checks = {}; }
+    document.querySelectorAll('.check-row input[type="checkbox"]').forEach(function(cb){
+      if (checks[cb.id]) cb.checked = true;
+      cb.addEventListener('change', function(){
+        checks[cb.id] = cb.checked;
+        localStorage.setItem(CHECK_KEY, JSON.stringify(checks));
+      });
+    });
+  })();
+
+  // ---- sleep tracker ----
+  (function(){
+    var SLEEP_KEY = 'dt_sleep_log_v1';
+    var log = [];
+    try { log = JSON.parse(localStorage.getItem(SLEEP_KEY) || '[]'); } catch(e) { log = []; }
+
+    var dateEl = document.getElementById('s-date');
+    var bedEl = document.getElementById('s-bed');
+    var wakeEl = document.getElementById('s-wake');
+    var noteEl = document.getElementById('s-note');
+    var qPicker = document.getElementById('s-quality');
+    var form = document.getElementById('sleep-form');
+    var statsEl = document.getElementById('sleep-stats');
+    var chartEl = document.getElementById('sleep-chart');
+    var listEl = document.getElementById('sleep-list');
+    var selectedQuality = 0;
+
+    var today = new Date();
+    var iso = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+    dateEl.value = iso;
+
+    qPicker.querySelectorAll('button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        selectedQuality = Number(btn.dataset.v);
+        qPicker.querySelectorAll('button').forEach(function(b){
+          b.classList.toggle('active', Number(b.dataset.v) <= selectedQuality);
+        });
+      });
+    });
+
+    function save(){ localStorage.setItem(SLEEP_KEY, JSON.stringify(log)); }
+
+    function duration(bed, wake){
+      var b = bed.split(':').map(Number), w = wake.split(':').map(Number);
+      var bMin = b[0]*60 + b[1], wMin = w[0]*60 + w[1];
+      if (wMin <= bMin) wMin += 24*60;
+      return Math.round(((wMin - bMin) / 60) * 10) / 10;
+    }
+
+    function qColor(q){
+      if (q <= 2) return 'var(--flag)';
+      if (q === 3) return 'var(--warn)';
+      return 'var(--good)';
+    }
+
+    function esc(s){
+      var d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function render(){
+      if (log.length === 0){
+        statsEl.innerHTML = '';
+        chartEl.innerHTML = '<div class="sleep-empty">No nights logged yet — add tonight above.</div>';
+        listEl.innerHTML = '<div class="sleep-empty">Nothing logged yet.</div>';
+        return;
+      }
+      var withIndex = log.map(function(e, i){ return Object.assign({_i:i}, e); });
+      var sorted = withIndex.slice().sort(function(a,b){ return a.date < b.date ? 1 : -1; });
+
+      var recent = sorted.slice(0, 7);
+      var avgDur = (recent.reduce(function(s,e){return s+e.duration;},0) / recent.length).toFixed(1);
+      var avgQ = (recent.reduce(function(s,e){return s+e.quality;},0) / recent.length).toFixed(1);
+
+      var noteHtml;
+      if (Number(avgQ) < 3){
+        noteHtml = '<div class="sleep-stat note">Quality is averaging low even though bedtime has been consistent for months — worth telling the doctor it\'s a <em>quality</em> issue, not just a timing one. Ties directly into the fatigue already flagged above.</div>';
+      } else {
+        noteHtml = '<div class="sleep-stat note">Quality looks reasonable on average right now — keep logging so a dip shows up early rather than after weeks of it.</div>';
+      }
+
+      statsEl.innerHTML =
+        '<div class="sleep-stat"><div class="num">' + avgDur + 'h</div><div class="lbl">Avg duration (7 nights)</div></div>' +
+        '<div class="sleep-stat"><div class="num">' + avgQ + '/5</div><div class="lbl">Avg quality (7 nights)</div></div>' +
+        noteHtml;
+
+      var chartEntries = sorted.slice(0, 14).slice().reverse();
+      chartEl.innerHTML = chartEntries.map(function(e){
+        var h = 10 + e.quality * 15;
+        return '<div class="sleep-bar"><div class="bar" style="height:' + h + 'px;background:' + qColor(e.quality) + '"></div><div class="d">' + e.date.slice(5) + '</div></div>';
+      }).join('');
+
+      listEl.innerHTML = sorted.slice(0, 10).map(function(e){
+        var noteText = e.note ? esc(e.note) : '&mdash;';
+        return '<div class="sleep-row">' +
+          '<span>' + e.date + '</span>' +
+          '<span>' + e.duration + 'h</span>' +
+          '<span class="note-text">' + noteText + '</span>' +
+          '<span class="q" style="color:' + qColor(e.quality) + '">Q' + e.quality + '</span>' +
+          '<button class="del" type="button" data-i="' + e._i + '" aria-label="Delete this entry">&times;</button>' +
+        '</div>';
+      }).join('');
+
+      listEl.querySelectorAll('.del').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          log.splice(Number(btn.dataset.i), 1);
+          save();
+          render();
+        });
+      });
+    }
+
+    form.addEventListener('submit', function(ev){
+      ev.preventDefault();
+      if (!dateEl.value || !bedEl.value || !wakeEl.value || !selectedQuality){
+        alert('Please fill date, bedtime, wake time, and pick a quality rating.');
+        return;
+      }
+      log.push({
+        date: dateEl.value,
+        bedtime: bedEl.value,
+        wake: wakeEl.value,
+        duration: duration(bedEl.value, wakeEl.value),
+        quality: selectedQuality,
+        note: noteEl.value.trim()
+      });
+      save();
+      render();
+      noteEl.value = '';
+      bedEl.value = '';
+      wakeEl.value = '';
+      selectedQuality = 0;
+      qPicker.querySelectorAll('button').forEach(function(b){ b.classList.remove('active'); });
+    });
+
+    // exposed so an imported file can add sleep entries without duplicating this module
+    window.__dtSleepUpsert = function(entries){
+      entries.forEach(function(ne){
+        var idx = log.findIndex(function(e){ return e.date === ne.date; });
+        if (idx >= 0) log[idx] = Object.assign({}, log[idx], ne);
+        else log.push(Object.assign({bedtime:'', wake:'', note:''}, ne));
+      });
+      save();
+      render();
+    };
+
+    render();
+  })();
+
+  // ---- weight tracker ----
+  (function(){
+    var KEY = 'dt_weight_log_v1';
+    var HEIGHT_M = 1.70;
+    var log = [];
+    try { log = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e) { log = []; }
+
+    var form = document.getElementById('weight-form');
+    var dateEl = document.getElementById('wt-date');
+    var weightEl = document.getElementById('wt-weight');
+    var statsEl = document.getElementById('weight-stats');
+    var gridEl = document.getElementById('weight-grid');
+    var listEl = document.getElementById('weight-list');
+
+    var today = new Date();
+    dateEl.value = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+
+    function save(){ localStorage.setItem(KEY, JSON.stringify(log)); }
+    function bmiOf(w){ return w / (HEIGHT_M * HEIGHT_M); }
+    function bmiCategory(bmi){
+      if (bmi < 18.5) return {text: 'Underweight', cls: 'warn'};
+      if (bmi < 25) return {text: 'Normal range', cls: 'good'};
+      if (bmi < 30) return {text: 'Above normal range', cls: 'warn'};
+      return {text: 'Well above normal range', cls: 'flag'};
+    }
+
+    function updateVitals(){
+      var sorted = log.slice().sort(function(a,b){ return a.date < b.date ? -1 : 1; });
+      var latest = sorted.length ? sorted[sorted.length-1].weight : 80;
+      var bmi = bmiOf(latest);
+      var cat = bmiCategory(bmi);
+      var wEl = document.getElementById('vital-weight');
+      var bEl = document.getElementById('vital-bmi');
+      var chipEl = document.getElementById('vital-bmi-chip');
+      if (wEl) wEl.innerHTML = latest.toFixed(1) + ' <small>kg</small>';
+      if (bEl) bEl.innerHTML = bmi.toFixed(1) + ' <small>kg/m&sup2;</small>';
+      if (chipEl) { chipEl.textContent = cat.text; chipEl.className = 'chip ' + cat.cls; }
+    }
+
+    function sparkline(entries){
+      if (entries.length === 0) return '<div class="trend">No data yet — log today above.</div>';
+      var w = 200, h = 44, pad = 4;
+      var vals = entries.map(function(e){ return e.weight; });
+      var lo = Math.min.apply(null, vals) - 1, hi = Math.max.apply(null, vals) + 1;
+      if (hi === lo) { hi += 1; lo -= 1; }
+      var pts = entries.map(function(e, i){
+        var x = entries.length === 1 ? w/2 : pad + (i / (entries.length - 1)) * (w - pad*2);
+        var y = h - pad - ((e.weight - lo) / (hi - lo)) * (h - pad*2);
+        return [x, y];
+      });
+      var linePath = pts.map(function(p,i){ return (i===0?'M':'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+      var areaPath = linePath + ' L' + pts[pts.length-1][0].toFixed(1) + ',' + h + ' L' + pts[0][0].toFixed(1) + ',' + h + ' Z';
+      var last = pts[pts.length-1];
+      return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+        '<line x1="0" y1="' + (h-pad) + '" x2="' + w + '" y2="' + (h-pad) + '" stroke="var(--line)" stroke-width="1"/>' +
+        '<path d="' + areaPath + '" fill="var(--accent)" opacity="0.12" stroke="none"/>' +
+        '<path d="' + linePath + '" fill="none" stroke="var(--accent)" stroke-width="1.75" opacity="0.8"/>' +
+        '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="3.5" fill="var(--accent)"/>' +
+      '</svg>';
+    }
+
+    function render(){
+      var sorted = log.slice().sort(function(a,b){ return a.date < b.date ? -1 : 1; });
+      var windowed = sorted.slice(-30);
+
+      if (sorted.length === 0){
+        statsEl.innerHTML = '';
+        gridEl.innerHTML = '<div class="symptom-card"><div class="top"><h4>Weight</h4></div>' + sparkline([]) + '</div>';
+        listEl.innerHTML = '<div class="sleep-empty">Nothing logged yet.</div>';
+        updateVitals();
+        return;
+      }
+
+      var latest = sorted[sorted.length-1];
+      var first = windowed[0];
+      var change = Math.round((latest.weight - first.weight) * 10) / 10;
+      var bmi = bmiOf(latest.weight);
+      var cat = bmiCategory(bmi);
+      var changeText = change === 0 ? 'steady' : (change > 0 ? '+' + change + 'kg' : change + 'kg') + ' since ' + first.date.slice(5);
+
+      statsEl.innerHTML =
+        '<div class="sleep-stat"><div class="num">' + latest.weight.toFixed(1) + 'kg</div><div class="lbl">Latest (' + latest.date.slice(5) + ')</div></div>' +
+        '<div class="sleep-stat"><div class="num">' + bmi.toFixed(1) + '</div><div class="lbl">BMI &mdash; ' + cat.text + '</div></div>' +
+        '<div class="sleep-stat note">' + changeText + ' &mdash; tracked over the last ' + windowed.length + ' logged day' + (windowed.length===1?'':'s') + '.</div>';
+
+      gridEl.innerHTML = '<div class="symptom-card"><div class="top"><h4>Weight trend</h4><span class="chip" style="background:transparent;color:var(--accent);border:1px solid rgba(94,234,212,.3);">' + latest.weight.toFixed(1) + 'kg</span></div>' + sparkline(windowed) + '</div>';
+
+      listEl.innerHTML = sorted.slice(-10).reverse().map(function(e){
+        var i = log.indexOf(e);
+        return '<div class="sleep-row" style="grid-template-columns:100px 1fr 26px;">' +
+          '<span>' + e.date + '</span>' +
+          '<span>' + e.weight.toFixed(1) + ' kg</span>' +
+          '<button class="del" type="button" data-i="' + i + '" aria-label="Delete this entry">&times;</button>' +
+        '</div>';
+      }).join('');
+
+      listEl.querySelectorAll('.del').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          log.splice(Number(btn.dataset.i), 1);
+          save();
+          render();
+        });
+      });
+
+      updateVitals();
+    }
+
+    form.addEventListener('submit', function(ev){
+      ev.preventDefault();
+      var date = dateEl.value, weight = Number(weightEl.value);
+      if (!date || !weight) return;
+      var idx = log.findIndex(function(e){ return e.date === date; });
+      var entry = {date: date, weight: weight};
+      if (idx >= 0) log[idx] = entry; else log.push(entry);
+      save();
+      render();
+    });
+
+    render();
+  })();
+
+  // ---- wearable / watch data ----
+  (function(){
+    var KEY = 'dt_watch_log_v1';
+    var log = [];
+    try { log = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e) { log = []; }
+
+    var form = document.getElementById('watch-form');
+    var dateEl = document.getElementById('w-date');
+    var hrEl = document.getElementById('w-hr');
+    var spo2El = document.getElementById('w-spo2');
+    var stepsEl = document.getElementById('w-steps');
+    var gridEl = document.getElementById('watch-grid');
+    var listEl = document.getElementById('watch-list');
+    var importInput = document.getElementById('w-import');
+    var statusEl = document.getElementById('import-status');
+    var defaultStatus = statusEl.textContent;
+
+    var today = new Date();
+    dateEl.value = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+
+    function save(){ localStorage.setItem(KEY, JSON.stringify(log)); }
+
+    function upsert(entries){
+      entries.forEach(function(ne){
+        var idx = log.findIndex(function(e){ return e.date === ne.date; });
+        if (idx >= 0) log[idx] = Object.assign({}, log[idx], ne);
+        else log.push(ne);
+      });
+      save();
+    }
+
+    function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+    function metricColor(metric, v){
+      if (v == null) return 'var(--muted)';
+      if (metric === 'hr') return (v > 100 || v < 50) ? 'var(--flag)' : 'var(--good)';
+      if (metric === 'spo2') return v < 95 ? 'var(--flag)' : 'var(--good)';
+      if (metric === 'steps') return v < 4000 ? 'var(--warn)' : 'var(--good)';
+      return 'var(--accent)';
+    }
+
+    function sparkline(entries, key, range){
+      var pts2 = entries.filter(function(e){ return e[key] != null; });
+      if (pts2.length === 0) return '<div class="trend">No data yet</div>';
+      var w = 200, h = 44, pad = 4;
+      var lo = range[0], hi = range[1];
+      var pts = pts2.map(function(e, i){
+        var x = pts2.length === 1 ? w/2 : pad + (i / (pts2.length - 1)) * (w - pad*2);
+        var clamped = Math.max(lo, Math.min(hi, e[key]));
+        var y = h - pad - ((clamped - lo) / (hi - lo)) * (h - pad*2);
+        return [x, y];
+      });
+      var linePath = pts.map(function(p,i){ return (i===0?'M':'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+      var areaPath = linePath + ' L' + pts[pts.length-1][0].toFixed(1) + ',' + h + ' L' + pts[0][0].toFixed(1) + ',' + h + ' Z';
+      var last = pts[pts.length-1];
+      var color = metricColor(key, pts2[pts2.length-1][key]);
+      return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+        '<line x1="0" y1="' + (h-pad) + '" x2="' + w + '" y2="' + (h-pad) + '" stroke="var(--line)" stroke-width="1"/>' +
+        '<path d="' + areaPath + '" fill="var(--accent)" opacity="0.12" stroke="none"/>' +
+        '<path d="' + linePath + '" fill="none" stroke="var(--accent)" stroke-width="1.75" opacity="0.8"/>' +
+        '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="3.5" fill="' + color + '"/>' +
+      '</svg>';
+    }
+
+    var METRICS = [
+      {key:'hr', label:'Resting HR', unit:'bpm', range:[45,110]},
+      {key:'spo2', label:'SpO2', unit:'%', range:[90,100]},
+      {key:'steps', label:'Steps', unit:'', range:[0,10000]}
+    ];
+
+    function render(){
+      var sorted = log.slice().sort(function(a,b){ return a.date < b.date ? -1 : 1; });
+      var windowed = sorted.slice(-14);
+
+      gridEl.innerHTML = METRICS.map(function(m){
+        var withVal = windowed.filter(function(e){ return e[m.key] != null; });
+        var latest = withVal.length ? withVal[withVal.length-1][m.key] : null;
+        var chip = latest === null ? '' :
+          '<span class="chip" style="background:transparent;color:' + metricColor(m.key, latest) + ';border:1px solid ' + metricColor(m.key, latest) + '22;">' + latest + m.unit + '</span>';
+        return '<div class="symptom-card">' +
+          '<div class="top"><h4>' + m.label + '</h4>' + chip + '</div>' +
+          sparkline(windowed, m.key, m.range) +
+        '</div>';
+      }).join('');
+
+      if (sorted.length === 0){
+        listEl.innerHTML = '<div class="sleep-empty">No watch readings yet.</div>';
+        return;
+      }
+      listEl.innerHTML = sorted.slice(-10).reverse().map(function(e){
+        var i = log.indexOf(e);
+        return '<div class="sleep-row" style="grid-template-columns:100px 1fr 1fr 1fr 26px;">' +
+          '<span>' + e.date + '</span>' +
+          '<span>' + (e.hr != null ? e.hr + ' bpm' : '&mdash;') + '</span>' +
+          '<span>' + (e.spo2 != null ? e.spo2 + '%' : '&mdash;') + '</span>' +
+          '<span>' + (e.steps != null ? e.steps : '&mdash;') + '</span>' +
+          '<button class="del" type="button" data-i="' + i + '" aria-label="Delete this entry">&times;</button>' +
+        '</div>';
+      }).join('');
+
+      listEl.querySelectorAll('.del').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          log.splice(Number(btn.dataset.i), 1);
+          save();
+          render();
+        });
+      });
+    }
+
+    form.addEventListener('submit', function(ev){
+      ev.preventDefault();
+      var entry = {date: dateEl.value};
+      if (hrEl.value !== '') entry.hr = Number(hrEl.value);
+      if (spo2El.value !== '') entry.spo2 = Number(spo2El.value);
+      if (stepsEl.value !== '') entry.steps = Number(stepsEl.value);
+      upsert([entry]);
+      render();
+      hrEl.value = ''; spo2El.value = ''; stepsEl.value = '';
+    });
+
+    // ---- file import: CSV or JSON export from NoiseFit / Google Fit ----
+    var ALIASES = {
+      date: ['date','day','datetime','recordedat','timestamp'],
+      hr: ['restinghr','restingheartrate','heartrate','hr','avgheartrate','heart_rate'],
+      spo2: ['spo2','spo2percent','oxygen','oxygensaturation','bloodoxygen'],
+      steps: ['steps','stepcount','step_count','totalsteps'],
+      sleepDuration: ['sleepduration','sleephours','totalsleep','sleepminutes','sleep_minutes','asleepminutes'],
+      sleepQuality: ['sleepquality','quality','sleepscore','sleepefficiency']
+    };
+    function normKey(k){ return String(k).toLowerCase().replace(/[^a-z0-9]/g, ''); }
+    function findField(row, aliasKey){
+      var keys = Object.keys(row);
+      for (var i=0;i<keys.length;i++){
+        if (ALIASES[aliasKey].indexOf(normKey(keys[i])) !== -1) return row[keys[i]];
+      }
+      return undefined;
+    }
+    function toISODate(raw){
+      if (raw == null) return null;
+      var s = String(raw).trim();
+      var m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+      if (m) return m[1];
+      var d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      }
+      return null;
+    }
+    function parseCSV(text){
+      var lines = text.split(/\r\n|\n/).filter(function(l){ return l.trim() !== ''; });
+      if (lines.length < 2) return [];
+      var headers = lines[0].split(',').map(function(h){ return h.trim(); });
+      return lines.slice(1).map(function(line){
+        var cells = line.split(',');
+        var row = {};
+        headers.forEach(function(h, i){ row[h] = cells[i] !== undefined ? cells[i].trim() : ''; });
+        return row;
+      });
+    }
+    // Apple Health's native "Export All Health Data" export.xml — one <Record> per reading.
+    // Aggregated per calendar day into the same row shape the CSV/JSON path already understands,
+    // so it flows through the same findField/ALIASES matching below unchanged.
+    function parseAppleHealthXML(text){
+      var doc;
+      try { doc = new DOMParser().parseFromString(text, 'application/xml'); }
+      catch(e) { return null; }
+      if (!doc || doc.getElementsByTagName('parsererror').length || !doc.querySelector('HealthData')) return null;
+
+      var byDate = {};
+      function dayOf(s){ return s ? s.slice(0,10) : null; }
+      function bucket(d){ byDate[d] = byDate[d] || {}; return byDate[d]; }
+
+      doc.querySelectorAll('Record[type="HKQuantityTypeIdentifierRestingHeartRate"]').forEach(function(r){
+        var d = dayOf(r.getAttribute('startDate')), v = parseFloat(r.getAttribute('value'));
+        if (!d || isNaN(v)) return;
+        var b = bucket(d); b._hrSum = (b._hrSum||0)+v; b._hrN = (b._hrN||0)+1;
+      });
+
+      doc.querySelectorAll('Record[type="HKQuantityTypeIdentifierOxygenSaturation"]').forEach(function(r){
+        var d = dayOf(r.getAttribute('startDate')), v = parseFloat(r.getAttribute('value'));
+        if (!d || isNaN(v)) return;
+        var pct = v <= 1 ? v*100 : v;
+        var b = bucket(d); b._spo2Sum = (b._spo2Sum||0)+pct; b._spo2N = (b._spo2N||0)+1;
+      });
+
+      // steps: sum per (date, source) since a phone + watch can both log steps, then take the
+      // max across sources for that day rather than summing everything (avoids double-counting)
+      var stepsBySrc = {};
+      doc.querySelectorAll('Record[type="HKQuantityTypeIdentifierStepCount"]').forEach(function(r){
+        var d = dayOf(r.getAttribute('startDate')), v = parseFloat(r.getAttribute('value'));
+        var src = r.getAttribute('sourceName') || 'unknown';
+        if (!d || isNaN(v)) return;
+        stepsBySrc[d] = stepsBySrc[d] || {};
+        stepsBySrc[d][src] = (stepsBySrc[d][src]||0) + v;
+      });
+      Object.keys(stepsBySrc).forEach(function(d){
+        var vals = Object.keys(stepsBySrc[d]).map(function(k){ return stepsBySrc[d][k]; });
+        bucket(d)._steps = Math.round(Math.max.apply(null, vals));
+      });
+
+      // sleep: bucket by the wake-side (endDate) so "night of" matches how the sleep tracker logs it.
+      // Some sources (e.g. NoiseFit) re-write the exact same interval on every sync, so dedupe
+      // identical (source,start,end) triples before summing — otherwise one real segment can look
+      // like it was logged 5-10x and produce impossible multi-day "sleep" totals.
+      var ASLEEP = {HKCategoryValueSleepAnalysisAsleep:1, HKCategoryValueSleepAnalysisAsleepUnspecified:1,
+        HKCategoryValueSleepAnalysisAsleepCore:1, HKCategoryValueSleepAnalysisAsleepDeep:1, HKCategoryValueSleepAnalysisAsleepREM:1};
+      var seenSleepIntervals = {};
+      var sleepBySrc = {};
+      doc.querySelectorAll('Record[type="HKCategoryTypeIdentifierSleepAnalysis"]').forEach(function(r){
+        if (!ASLEEP[r.getAttribute('value')]) return;
+        var src = r.getAttribute('sourceName') || 'unknown';
+        var sd = r.getAttribute('startDate'), ed = r.getAttribute('endDate');
+        var key = src + '|' + sd + '|' + ed;
+        if (seenSleepIntervals[key]) return;
+        seenSleepIntervals[key] = true;
+        var start = new Date(sd), end = new Date(ed);
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) return;
+        var hrs = (end.getTime() - start.getTime()) / 3600000;
+        if (hrs <= 0) return;
+        var d = dayOf(ed);
+        sleepBySrc[d] = sleepBySrc[d] || {};
+        sleepBySrc[d][src] = (sleepBySrc[d][src] || 0) + hrs;
+      });
+      Object.keys(sleepBySrc).forEach(function(d){
+        var vals = Object.keys(sleepBySrc[d]).map(function(k){ return sleepBySrc[d][k]; });
+        bucket(d)._sleepHrs = Math.min(16, Math.max.apply(null, vals)); // clamp as a sanity backstop
+      });
+
+      var rows = [];
+      Object.keys(byDate).forEach(function(d){
+        var e = byDate[d], row = {date: d};
+        if (e._hrN) row.hr = Math.round(e._hrSum / e._hrN);
+        if (e._spo2N) row.spo2 = Math.round(e._spo2Sum / e._spo2N);
+        if (e._steps != null) row.steps = e._steps;
+        if (e._sleepHrs) row.sleepDuration = Math.round(e._sleepHrs*10)/10;
+        rows.push(row);
+      });
+      return rows;
+    }
+
+    function rowsFromText(text, fileName){
+      if (/\.xml$/i.test(fileName || '') || /<HealthData/i.test(text.slice(0, 2000))){
+        var xmlRows = parseAppleHealthXML(text);
+        if (xmlRows) return xmlRows;
+      }
+      var trimmed = text.trim();
+      try {
+        var parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed && Array.isArray(parsed.data)) return parsed.data;
+        if (parsed && Array.isArray(parsed.entries)) return parsed.entries;
+        if (parsed && Array.isArray(parsed.records)) return parsed.records;
+      } catch(e) { /* not JSON, fall through to CSV */ }
+      return parseCSV(text);
+    }
+
+    importInput.addEventListener('change', function(){
+      var file = importInput.files[0];
+      if (!file) return;
+      if (/\.zip$/i.test(file.name)){
+        statusEl.textContent = 'That\'s the zipped export — unzip it first (Files app: tap and hold → Uncompress, or on a computer), then upload the export.xml file inside it, not the zip.';
+        statusEl.className = 'import-status err';
+        importInput.value = '';
+        return;
+      }
+      statusEl.textContent = 'Reading ' + esc(file.name) + '…';
+      statusEl.className = 'import-status';
+      var reader = new FileReader();
+      reader.onload = function(){
+        var rows;
+        try { rows = rowsFromText(String(reader.result), file.name); }
+        catch(e){ rows = []; }
+
+        var watchEntries = [], sleepEntries = [];
+        rows.forEach(function(row){
+          var date = toISODate(findField(row, 'date'));
+          if (!date) return;
+          var hr = findField(row, 'hr');
+          var spo2 = findField(row, 'spo2');
+          var steps = findField(row, 'steps');
+          var we = {date: date};
+          var hasWatch = false;
+          if (hr !== undefined && hr !== '') { we.hr = Number(hr); hasWatch = true; }
+          if (spo2 !== undefined && spo2 !== '') { we.spo2 = Number(spo2); hasWatch = true; }
+          if (steps !== undefined && steps !== '') { we.steps = Number(steps); hasWatch = true; }
+          if (hasWatch) watchEntries.push(we);
+
+          var sd = findField(row, 'sleepDuration');
+          var sq = findField(row, 'sleepQuality');
+          if (sd !== undefined && sd !== ''){
+            var durationHrs = Number(sd);
+            if (durationHrs > 20) durationHrs = Math.round((durationHrs/60)*10)/10; // looks like minutes
+            var quality = 3;
+            if (sq !== undefined && sq !== ''){
+              var qNum = Number(sq);
+              quality = qNum > 5 ? Math.max(1, Math.min(5, Math.round(qNum/20))) : Math.max(1, Math.min(5, Math.round(qNum)));
+            }
+            sleepEntries.push({date: date, duration: durationHrs, quality: quality});
+          }
+        });
+
+        if (watchEntries.length) upsert(watchEntries);
+        if (sleepEntries.length && window.__dtSleepUpsert) window.__dtSleepUpsert(sleepEntries);
+        render();
+
+        if (watchEntries.length === 0 && sleepEntries.length === 0){
+          statusEl.textContent = 'No recognizable columns found in ' + esc(file.name) + ' — check it has a date column plus resting HR / SpO2 / steps / sleep duration.';
+          statusEl.className = 'import-status err';
+        } else {
+          statusEl.textContent = 'Imported ' + watchEntries.length + ' watch reading(s) and ' + sleepEntries.length + ' sleep entr' + (sleepEntries.length===1?'y':'ies') + ' from ' + esc(file.name) + '.';
+          statusEl.className = 'import-status ok';
+        }
+        importInput.value = '';
+      };
+      reader.onerror = function(){
+        statusEl.textContent = 'Could not read that file.';
+        statusEl.className = 'import-status err';
+      };
+      reader.readAsText(file);
+    });
+
+    render();
+  })();
+
+  // ---- symptom severity trend ----
+  (function(){
+    var KEY = 'dt_symptom_log_v1';
+    var log = [];
+    try { log = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e) { log = []; }
+
+    var SYMPTOMS = [
+      {key:'neck', label:'Neck & shoulders'},
+      {key:'back', label:'Low back'},
+      {key:'knee', label:'Right knee'},
+      {key:'fingers', label:'Finger joints'},
+      {key:'muscle', label:'Muscles'},
+      {key:'gi', label:'Digestion / GI'},
+      {key:'fatigue', label:'Fatigue'}
+    ];
+
+    var form = document.getElementById('symptom-form');
+    var dateEl = document.getElementById('sym-date');
+    var gridEl = document.getElementById('symptom-grid');
+
+    var today = new Date();
+    dateEl.value = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+
+    SYMPTOMS.forEach(function(s){
+      var input = document.getElementById('sym-' + s.key);
+      var out = input.nextElementSibling;
+      input.addEventListener('input', function(){ out.textContent = input.value; });
+    });
+
+    function save(){ localStorage.setItem(KEY, JSON.stringify(log)); }
+
+    function sevColor(v){
+      if (v <= 1) return 'var(--good)';
+      if (v <= 3) return 'var(--warn)';
+      return 'var(--flag)';
+    }
+
+    function sparkline(entries, key){
+      if (entries.length === 0){
+        return '<div class="trend">No data yet — log today above.</div>';
+      }
+      var w = 200, h = 44, pad = 4;
+      var pts = entries.map(function(e, i){
+        var x = entries.length === 1 ? w/2 : pad + (i / (entries.length - 1)) * (w - pad*2);
+        var y = h - pad - (e[key] / 5) * (h - pad*2);
+        return [x, y];
+      });
+      var linePath = pts.map(function(p,i){ return (i===0?'M':'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+      var areaPath = linePath + ' L' + pts[pts.length-1][0].toFixed(1) + ',' + h + ' L' + pts[0][0].toFixed(1) + ',' + h + ' Z';
+      var last = pts[pts.length-1];
+      var latestVal = entries[entries.length-1][key];
+      var color = sevColor(latestVal);
+      return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+        '<line x1="0" y1="' + (h-pad) + '" x2="' + w + '" y2="' + (h-pad) + '" stroke="var(--line)" stroke-width="1"/>' +
+        '<path d="' + areaPath + '" fill="var(--accent)" opacity="0.12" stroke="none"/>' +
+        '<path d="' + linePath + '" fill="none" stroke="var(--accent)" stroke-width="1.75" opacity="0.8"/>' +
+        '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="3.5" fill="' + color + '"/>' +
+      '</svg>';
+    }
+
+    function trendLabel(entries, key){
+      if (entries.length < 2) return {text:'Not enough data yet', cls:''};
+      var latest = entries[entries.length-1][key];
+      var earliest = entries[0][key];
+      var diff = latest - earliest;
+      if (diff >= 1) return {text:'▲ worsening since ' + entries[0].date.slice(5), cls:'up'};
+      if (diff <= -1) return {text:'▼ improving since ' + entries[0].date.slice(5), cls:'down'};
+      return {text:'→ steady since ' + entries[0].date.slice(5), cls:''};
+    }
+
+    function render(){
+      var sorted = log.slice().sort(function(a,b){ return a.date < b.date ? -1 : 1; });
+      var windowed = sorted.slice(-14);
+
+      gridEl.innerHTML = SYMPTOMS.map(function(s){
+        var latest = windowed.length ? windowed[windowed.length-1][s.key] : null;
+        var chip = latest === null ? '' :
+          '<span class="chip" style="background:transparent;color:' + sevColor(latest) + ';border:1px solid ' + sevColor(latest) + '22;">' + latest + '/5</span>';
+        var trend = windowed.length ? trendLabel(windowed, s.key) : {text:'No data yet', cls:''};
+        return '<div class="symptom-card">' +
+          '<div class="top"><h4>' + s.label + '</h4>' + chip + '</div>' +
+          sparkline(windowed, s.key) +
+          '<div class="trend ' + trend.cls + '">' + trend.text + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    form.addEventListener('submit', function(ev){
+      ev.preventDefault();
+      var entry = {date: dateEl.value};
+      SYMPTOMS.forEach(function(s){
+        entry[s.key] = Number(document.getElementById('sym-' + s.key).value);
+      });
+      var existingIdx = log.findIndex(function(e){ return e.date === entry.date; });
+      if (existingIdx >= 0) log[existingIdx] = entry;
+      else log.push(entry);
+      save();
+      render();
+    });
+
+    render();
+  })();
+</script>
