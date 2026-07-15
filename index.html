@@ -892,7 +892,7 @@
       <input type="date" id="w-date" required>
     </div>
     <div class="sleep-field">
-      <label for="w-hr">Resting HR (bpm)</label>
+      <label for="w-hr">Heart rate (bpm)</label>
       <input type="number" id="w-hr" min="30" max="200" placeholder="e.g. 72">
     </div>
     <div class="sleep-field">
@@ -913,6 +913,7 @@
   </div>
 
   <div class="symptom-grid" id="watch-grid"></div>
+  <div class="priority-note" id="watch-insights" style="margin-top:2px;"></div>
   <div class="sleep-list" id="watch-list"></div>
 
   <h2 class="section">Symptom severity trend</h2>
@@ -1561,6 +1562,7 @@
     var spo2El = document.getElementById('w-spo2');
     var stepsEl = document.getElementById('w-steps');
     var gridEl = document.getElementById('watch-grid');
+    var insightsEl = document.getElementById('watch-insights');
     var listEl = document.getElementById('watch-list');
     var importInput = document.getElementById('w-import');
     var statusEl = document.getElementById('import-status');
@@ -1614,14 +1616,54 @@
     }
 
     var METRICS = [
-      {key:'hr', label:'Resting HR', unit:'bpm', range:[45,110]},
+      {key:'hr', label:'Heart rate', unit:'bpm', range:[45,110]},
       {key:'spo2', label:'SpO2', unit:'%', range:[90,100]},
       {key:'steps', label:'Steps', unit:'', range:[0,10000]}
     ];
 
+    function buildInsights(sortedAll){
+      if (sortedAll.length === 0){
+        return '<strong>Insights:</strong> No data yet &mdash; import a file or log a reading above to see a summary here.';
+      }
+      var parts = [];
+      var stepsArr = sortedAll.filter(function(e){ return e.steps != null; }).map(function(e){ return e.steps; });
+      var hrArr = sortedAll.filter(function(e){ return e.hr != null; }).map(function(e){ return e.hr; });
+
+      if (stepsArr.length){
+        var avgSteps = Math.round(stepsArr.reduce(function(a,b){return a+b;},0) / stepsArr.length);
+        var underCount = stepsArr.filter(function(s){ return s < 5000; }).length;
+        var underPct = Math.round(underCount / stepsArr.length * 100);
+        parts.push('<strong>Walking:</strong> averaging ' + avgSteps.toLocaleString() + ' steps/day across ' + stepsArr.length + ' day(s) logged, ' + underPct + '% of days under 5,000 &mdash; consistent with the long daily commute leaving little room for incidental walking. Pairs directly with the walk days in the exercise plan above.');
+      }
+
+      if (hrArr.length){
+        var avgHr = Math.round(hrArr.reduce(function(a,b){return a+b;},0) / hrArr.length);
+        var elevatedCount = hrArr.filter(function(h){ return h > 90; }).length;
+        parts.push('<strong>Heart rate:</strong> averaging ' + avgHr + ' bpm across ' + hrArr.length + ' day(s) with data &mdash; this is an average of readings through the day, not a clinical resting measurement (NoiseFit doesn\'t write the dedicated "resting HR" type Apple Health looks for). ' + elevatedCount + ' day(s) came in over 90 bpm; worth mentioning if that keeps up, not urgent on its own.');
+      } else {
+        parts.push('<strong>Heart rate:</strong> no data yet.');
+      }
+
+      var sleepLogAll = [];
+      try { sleepLogAll = JSON.parse(localStorage.getItem('dt_sleep_log_v1') || '[]'); } catch(e){ sleepLogAll = []; }
+      var sleepDurs = sleepLogAll.filter(function(e){ return e.duration != null; }).map(function(e){ return e.duration; });
+      if (sleepDurs.length < 5){
+        parts.push('<strong>Sleep:</strong> only ' + sleepDurs.length + ' night(s) logged so far &mdash; too few to see a real pattern yet. Keep wearing it overnight for a week or two before drawing conclusions.');
+      } else {
+        var avgDur = Math.round(sleepDurs.reduce(function(a,b){return a+b;},0) / sleepDurs.length * 10) / 10;
+        parts.push('<strong>Sleep:</strong> averaging ' + avgDur + 'h across ' + sleepDurs.length + ' night(s) logged.');
+      }
+
+      parts.push('<strong>SpO2:</strong> not shown &mdash; every oxygen-saturation record in your Apple Health data came from a different, older app ("Da Fit," 2022&ndash;2025), none from NoiseFit. Your current watch/app combination doesn\'t appear to sync blood oxygen to Apple Health at all.');
+
+      return parts.join(' ');
+    }
+
     function render(){
       var sorted = log.slice().sort(function(a,b){ return a.date < b.date ? -1 : 1; });
       var windowed = sorted.slice(-14);
+
+      insightsEl.innerHTML = buildInsights(sorted);
 
       gridEl.innerHTML = METRICS.map(function(m){
         var withVal = windowed.filter(function(e){ return e[m.key] != null; });
@@ -1727,6 +1769,17 @@
         var b = bucket(d); b._hrSum = (b._hrSum||0)+v; b._hrN = (b._hrN||0)+1;
       });
 
+      // fallback: many wearable apps (e.g. NoiseFit) write plain HeartRate readings, not the
+      // dedicated "resting" type — average those per day when resting HR isn't available.
+      // Scoped to sourceName="NoiseFit" specifically so an unrelated paired device (phone,
+      // another band) doesn't skew the number.
+      doc.querySelectorAll('Record[type="HKQuantityTypeIdentifierHeartRate"]').forEach(function(r){
+        if ((r.getAttribute('sourceName') || '') !== 'NoiseFit') return;
+        var d = dayOf(r.getAttribute('startDate')), v = parseFloat(r.getAttribute('value'));
+        if (!d || isNaN(v)) return;
+        var b = bucket(d); b._hrAvgSum = (b._hrAvgSum||0)+v; b._hrAvgN = (b._hrAvgN||0)+1;
+      });
+
       doc.querySelectorAll('Record[type="HKQuantityTypeIdentifierOxygenSaturation"]').forEach(function(r){
         var d = dayOf(r.getAttribute('startDate')), v = parseFloat(r.getAttribute('value'));
         if (!d || isNaN(v)) return;
@@ -1781,6 +1834,7 @@
       Object.keys(byDate).forEach(function(d){
         var e = byDate[d], row = {date: d};
         if (e._hrN) row.hr = Math.round(e._hrSum / e._hrN);
+        else if (e._hrAvgN) row.hr = Math.round(e._hrAvgSum / e._hrAvgN); // avg HR, not true resting HR
         if (e._spo2N) row.spo2 = Math.round(e._spo2Sum / e._spo2N);
         if (e._steps != null) row.steps = e._steps;
         if (e._sleepHrs) row.sleepDuration = Math.round(e._sleepHrs*10)/10;
